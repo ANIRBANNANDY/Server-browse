@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>Windows Server Folders</title>
 </head>
 <body>
     <h1>Folders on Windows Servers</h1>
     <ul>
         {% for server, path in folders.items() %}
-            <li>
-                <a href="{{ url_for('view_folder', server_name=server) }}">{{ server }}</a>
-            </li>
+        <li>
+            <a href="{{ url_for('view_folder', server_name=server) }}">{{ server }}</a>
+        </li>
         {% endfor %}
     </ul>
 </body>
