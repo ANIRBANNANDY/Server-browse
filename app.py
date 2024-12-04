@@ -1,11 +1,8 @@
-# /app.py
-
-from flask import Flask, render_template, send_from_directory, abort
+from flask import Flask, render_template, abort
 import os
 
 app = Flask(__name__)
 
-# Configuration: Paths to the shared folders on each Windows server
 SERVERS = {
     "Server1": r"\\server1\shared\folder",
     "Server2": r"\\server2\shared\folder",
@@ -15,41 +12,47 @@ SERVERS = {
     "Server6": r"\\server6\shared\folder",
 }
 
+
 @app.route("/")
 def home():
-    # Get a list of folders and ensure they exist
+    # Display the root-level folders
     folders = {server: path for server, path in SERVERS.items() if os.path.exists(path)}
     return render_template("home.html", folders=folders)
 
+
 @app.route("/folder/<server_name>")
-def view_folder(server_name):
-    # Check if the server name exists
+@app.route("/folder/<server_name>/<path:subpath>")
+def view_folder(server_name, subpath=""):
+    # Validate server name
     if server_name not in SERVERS:
-        abort(404, description="Server not found")
+        return f"Server '{server_name}' not found.", 404
 
-    folder_path = SERVERS[server_name]
+    base_path = SERVERS[server_name]
+    folder_path = os.path.join(base_path, subpath)
 
-    # List folder contents
+    # Check if the resolved path exists
     if not os.path.exists(folder_path):
-        abort(404, description="Folder not found")
+        return f"Path '{folder_path}' does not exist or cannot be accessed.", 404
 
-    contents = os.listdir(folder_path)
-    return render_template("folder.html", server_name=server_name, contents=contents, folder_path=folder_path)
+    # List contents
+    try:
+        contents = os.listdir(folder_path)
+    except Exception as e:
+        return f"Error accessing folder '{folder_path}': {e}", 500
 
-@app.route("/download/<server_name>/<filename>")
-def download_file(server_name, filename):
-    if server_name not in SERVERS:
-        abort(404, description="Server not found")
+    # Distinguish files and folders
+    items = [
+        {
+            "name": item,
+            "is_folder": os.path.isdir(os.path.join(folder_path, item)),
+        }
+        for item in contents
+    ]
 
-    folder_path = SERVERS[server_name]
-    if not os.path.exists(folder_path):
-        abort(404, description="Folder not found")
+    return render_template(
+        "folder.html", server_name=server_name, folder_path=folder_path, items=items
+    )
 
-    file_path = os.path.join(folder_path, filename)
-    if not os.path.exists(file_path):
-        abort(404, description="File not found")
-
-    return send_from_directory(folder_path, filename, as_attachment=True)
 
 if __name__ == "__main__":
     app.run(debug=True)
