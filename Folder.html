@@ -1,16 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>{{ server_name }} Folder</title>
+    <title>Contents of {{ folder_path }}</title>
 </head>
 <body>
-    <h1>Contents of {{ server_name }}</h1>
+    <h1>Contents of {{ folder_path }}</h1>
     <ul>
-        {% for item in contents %}
-            <li>
-                <a href="{{ url_for('download_file', server_name=server_name, filename=item) }}">{{ item }}</a>
-            </li>
+        {% for item in items %}
+        <li>
+            {% if item.is_folder %}
+            <a href="{{ url_for('view_folder', server_name=server_name, subpath=item.name) }}">{{ item.name }}</a>
+            {% else %}
+            {{ item.name }}
+            {% endif %}
+        </li>
         {% endfor %}
     </ul>
     <a href="{{ url_for('home') }}">Back to Home</a>
