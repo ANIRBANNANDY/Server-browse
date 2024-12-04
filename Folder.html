@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ server_name }} Folder</title>
+</head>
+<body>
+    <h1>Contents of {{ server_name }}</h1>
+    <ul>
+        {% for item in contents %}
+            <li>
+                <a href="{{ url_for('download_file', server_name=server_name, filename=item) }}">{{ item }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('home') }}">Back to Home</a>
+</body>
+</html>
